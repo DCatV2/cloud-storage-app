@@ -2,3 +2,6 @@ flask
 psycopg2-binary
 bcrypt
 pyjwt
+flask-sqlalchemy
+flask-login
+flask-bcrypt
