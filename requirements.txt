@@ -5,3 +5,4 @@ pyjwt
 flask-sqlalchemy
 flask-login
 flask-bcrypt
+flask-migrate
