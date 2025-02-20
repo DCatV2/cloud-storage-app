@@ -1,9 +1,12 @@
 ﻿# Простая главная страница
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from app import app, db
 from app.models import User
-from flask_login import login_user, login_required
+from flask_login import login_user, login_required, logout_user
+import os
+from werkzeug.utils import secure_filename
 
+# Маршрут авторизации
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -22,7 +25,66 @@ def login():
     
     return render_template('login.html')
 
+
+# Главная страница
 @app.route("/")
 @login_required
 def index():
-    return render_template('index.html')  # Загружаем HTML-шаблон
+    files = os.listdir(app.config["UPLOAD_FOLDER"]) if os.path.exists(app.config["UPLOAD_FOLDER"]) else []
+    return render_template("index.html", files=files)
+
+# Выход из системы
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Вы вышли из системы.", "Info")
+    return redirect(url_for('login')) # Перенаправляем на страницу входа
+
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads") # Папка для сохранения файлов
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'txt', 'docx', 'xls', 'xlsx', 'dwg', 'dxf'} # Разрешённые форматы
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER # Добавляем путь в конфиг
+
+# Создаём папку, если её нет
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Функция проверки допустимого типа файлов
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Маршрут для загрузки файлов
+@app.route("/upload", methods=["POST"])
+@login_required
+def upload_file():
+    if "file" not in request.files:
+        flash("Файл не выбран!", "danger")
+        return redirect(url_for("index"))
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        flash("Файл не выбран!", "danger")
+        return redirect(url_for("index"))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        flash("Файл успешно загружен!", "success")
+    else:
+        flash("Недопустимый формат файла!", "danger")
+
+    return redirect(url_for("index"))
+
+# Маршрут для скачивания файлов
+@app.route("/download/<filename>")
+@login_required
+def download_file(filename):
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+    if os.path.exists(file_path):
+        return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
+    else:
+        flash("Файл не найден!", "danger")
+        return redirect(url_for("index"))
