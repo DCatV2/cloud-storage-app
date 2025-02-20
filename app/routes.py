@@ -88,3 +88,17 @@ def download_file(filename):
     else:
         flash("Файл не найден!", "danger")
         return redirect(url_for("index"))
+
+# Маршрут для удаления файлов
+@app.route("/delete/<filename>", methods=["POST"])
+@login_required
+def delete_file(filename):
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+    if os.path.exists(file_path): # Проверяем, существует ли файл
+        os.remove(file_path) # Удаляем файл
+        flash(f"Файл {filename} удалён!", "success")
+    else:
+        flash("Файл не найден!", "danger")
+
+    return redirect(url_for("index"))

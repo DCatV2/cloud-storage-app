@@ -1,27 +1,41 @@
 ﻿<!DOCTYPE html>
-
-<html lang="ru" 
+<html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная</title>
 </head>
 <body>
     <h1>Добро пожаловать в облачное хранилище!</h1>
     <p>Вы вошли как: {{ current_user.username }}</p>
+
+    <!-- Кнопка выхода -->
     <a href="{{ url_for('logout') }}">Выйти</a>
+
+    <!-- Форма загрузки файла -->
     <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" />
+        <input type="file" name="file" required />
         <button type="submit">Загрузить</button>
     </form>
 
     <h2>Загруженные файлы</h2>
+
+    {% if files %}
     <ul>
         {% for file in files %}
-            <li>
-                {{ file }} - <a href="{{ url_for('download_file', filename=file) }}">Скачать</a>
-            </li>
+        <li>
+            {{ file }} -
+            <a href="{{ url_for('download_file', filename=file) }}">Скачать</a>
+            <form action="{{ url_for('delete_file', filename=file) }}" method="post" style="display:inline;">
+                <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить {{ file }}?');">
+                    Удалить
+                </button>
+            </form>
+        </li>
         {% endfor %}
     </ul>
+    {% else %}
+    <p>Файлы не загружены.</p>
+    {% endif %}
 </body>
 </html>
