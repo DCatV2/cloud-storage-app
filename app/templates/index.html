@@ -4,38 +4,90 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная</title>
+
+    <!-- Подключаем Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
-    <h1>Добро пожаловать в облачное хранилище!</h1>
-    <p>Вы вошли как: {{ current_user.username }}</p>
+<body class="bg-light">
 
-    <!-- Кнопка выхода -->
-    <a href="{{ url_for('logout') }}">Выйти</a>
+    <div class="container mt-4">
+        <h1 class="text-center">Облачное хранилище</h1>
+        <p class="text-center">Вы вошли как: <strong>{{ current_user.username }}</strong></p>
 
-    <!-- Форма загрузки файла -->
-    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required />
-        <button type="submit">Загрузить</button>
-    </form>
+        <!-- Кнопка выхода -->
+        <div class="text-end">
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Выйти</a>
+        </div>
 
-    <h2>Загруженные файлы</h2>
+        <!-- Форма загрузки файлов -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h4 class="card-title">Загрузка файлов</h4>
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="d-flex">
+                    <input type="file" name="file" class="form-control me-2" required>
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                </form>
+            </div>
+        </div>
 
-    {% if files %}
-    <ul>
-        {% for file in files %}
-        <li>
-            {{ file }} -
-            <a href="{{ url_for('download_file', filename=file) }}">Скачать</a>
-            <form action="{{ url_for('delete_file', filename=file) }}" method="post" style="display:inline;">
-                <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить {{ file }}?');">
-                    Удалить
-                </button>
-            </form>
-        </li>
+        <!-- Всплывающие сообщения Flask Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mt-3">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert {{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+        </div>
         {% endfor %}
-    </ul>
-    {% else %}
-    <p>Файлы не загружены.</p>
-    {% endif %}
+        {% endif %}
+        {% endwith %}
+
+
+        <!-- Таблица загруженных файлов -->
+        <h4 class="mt-4">Загруженные файлы</h4>
+        {% if files %}
+        <table class="table table-bordered table-hover mt-2">
+            <thead class="table-dark">
+                <tr>
+                    <th>Имя файла</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td>{{ file }}</td>
+                    <td>
+                        <a href="{{ url_for('download_file', filename=file) }}" class="btn btn-success btn-sm">Скачать</a>
+                        <form action="{{ url_for('delete_file', filename=file) }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить {{ file }}?');">
+                                Удалить
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">Файлы не загружены.</p>
+        {% endif %}
+
+    </div>
 </body>
 </html>
+
