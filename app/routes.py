@@ -1,5 +1,4 @@
-﻿# Простая главная страница
-from flask import render_template, url_for, flash, redirect, request, send_from_directory
+﻿from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from app import app, db
 from app.models import User
 from flask_login import login_user, login_required, logout_user
@@ -43,7 +42,7 @@ def logout():
     return redirect(url_for('login')) # Перенаправляем на страницу входа
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads") # Папка для сохранения файлов
-ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'txt', 'docx', 'xls', 'xlsx', 'dwg', 'dxf'} # Разрешённые форматы
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'txt', 'docx', 'xls', 'xlsx', 'dwg', 'dxf', 'sdr', 'SDR'} # Разрешённые форматы
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER # Добавляем путь в конфиг
 
